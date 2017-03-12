@@ -29,7 +29,7 @@ $config['modules']['gii']['class'] = 'yii\gii\Module';
 ```php
 //Add this into backend/config/main-local.php
 $config['modules']['gii']['generators'] = [
-        'kartikgii-crud' => ['class' => 'felipesantos\kartikgii\crud\Generator'],
+        'kartikgii-crud' => ['class' => 'felipe-santos\kartikgii\crud\Generator'],
     ];
 ```
 
