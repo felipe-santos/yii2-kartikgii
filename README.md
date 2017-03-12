@@ -1,23 +1,3 @@
-I would like to apologize for not following up with this plugin because i has been migrate over to Laravel. However i would like to thanks everyone for using this plugin. Please do let me know is there any nice fork of this project, i will share to link for everyone here. 
-
-yii2-kartikgii
-==============
-
-Gii CRUD Generator base on kartik-v extension. Save repeatitive works on every new CRUD generated. Below are some of the features:
-
-- Data grid view are generated using kartik-v/yii2-grid, pjax are use for the grid
-- Detail View are generated using kartik-v/yii2-detail-view, controllers are generated to support edit mode saving and delete in Detail View.
-- _form are generated using kartik-v/yii2-builder, Date/Time/DateTime/TimeStamp column are automatically generated to use DateTimePicker Widget.
-- Using kartik-v/yii2-datecontrol to globalize date format, so date will automatically convert for the display and also for save according to the format you set, for all CRUD generated using this extension.
-
-By using this extension, you no longer have to change your CRUD to using kartik-v extension, everything will be auto generated for you, and you could customize it later if you need.
-
-Thanks for the great kartik-v extension. 
-
-For more information about kartik-v extension, please visit [kartik-v at Github](https://www.github.com/kartik-v).
-
-> NOTE: This is the first extension i created, please kindly comment or suggest for better or correct me if im doing anything wrong. Thanks.
-
 ## Installation
 
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
@@ -25,13 +5,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-$ php composer.phar require warrence/yii2-kartikgii "dev-master"
+$ php composer.phar require felipe-santos/yii2-kartikgii "dev-master"
 ```
 
 or add
 
 ```
-"warrence/yii2-kartikgii": "dev-master"
+"felipe-santos/yii2-kartikgii": "dev-master"
 ```
 
 to the ```require``` section of your `composer.json` file.
@@ -49,7 +29,7 @@ $config['modules']['gii']['class'] = 'yii\gii\Module';
 ```php
 //Add this into backend/config/main-local.php
 $config['modules']['gii']['generators'] = [
-        'kartikgii-crud' => ['class' => 'warrence\kartikgii\crud\Generator'],
+        'kartikgii-crud' => ['class' => 'felipesantos\kartikgii\crud\Generator'],
     ];
 ```
 
