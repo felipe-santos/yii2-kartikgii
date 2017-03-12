@@ -9,7 +9,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "felipesantos\\kartikgii\\": ""
+            "felipe-santos\\kartikgii\\": ""
         }
     },
     "require": {

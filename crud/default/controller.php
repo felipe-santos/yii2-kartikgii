@@ -31,6 +31,7 @@ namespace <?= StringHelper::dirname(ltrim($generator->controllerClass, '\\')) ?>
 
 use Yii;
 use <?= ltrim($generator->modelClass, '\\') ?>;
+use <?= str_replace("Tb", "Log", ltrim($generator->modelClass, '\\')) ?>;
 <?php if (!empty($generator->searchModelClass)): ?>
 use <?= ltrim($generator->searchModelClass, '\\') . (isset($searchModelAlias) ? " as $searchModelAlias" : "") ?>;
 <?php else: ?>
@@ -92,6 +93,9 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
         $model = $this->findModel(<?= $actionParams ?>);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            <?php if(stripos($controllerClass, "Log") === false){ ?>
+            $this->actionSavelog($model->id, "UPDATE", "", "");
+            <?php } ?>
             return $this->redirect(['view', 'id' => $model-><?=$generator->getTableSchema()->primaryKey[0]?>]);
         } else {
             return $this->render('view', ['model' => $model]);
@@ -108,6 +112,9 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
         $model = new <?= $modelClass ?>;
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            <?php if(stripos($controllerClass, "Log") === false){ ?>
+            $this->actionSavelog($model->id, "INSERT", "", "");
+            <?php } ?>
             return $this->redirect(['view', <?= $urlParams ?>]);
         } else {
             return $this->render('create', [
@@ -125,8 +132,12 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
     public function actionUpdate(<?= $actionParams ?>)
     {
         $model = $this->findModel(<?= $actionParams ?>);
+        $model2 = $this->findModel(<?= $actionParams ?>);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            <?php if(stripos($controllerClass, "Log") === false){ ?>
+            $this->actionSavelog($model->id, "UPDATE", "", "");
+            <?php } ?>
             return $this->redirect(['view', <?= $urlParams ?>]);
         } else {
             return $this->render('update', [
@@ -143,10 +154,30 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
      */
     public function actionDelete(<?= $actionParams ?>)
     {
+        <?php if(stripos($controllerClass, "Log") === false){ ?>
+        $model = $this->findModel(<?= $actionParams ?>);
+        $this->actionSavelog($model->id, "DELETE", "", "");
+        <?php } ?>
+
         $this->findModel(<?= $actionParams ?>)->delete();
 
         return $this->redirect(['index']);
     }
+
+    <?php if(stripos($controllerClass, "Log") === false){ ?>
+    public function actionSavelog($id, $acao, $nome, $descricao)
+    {
+        $log = new <?= str_replace("Tb", "Log", $modelClass) ?>;
+
+        $log->id_usuario = (isset(Yii::$app->user->id) && !empty(Yii::$app->user->id)) ? Yii::$app->user->id : 1;
+        $log->id_modificado = $id;
+        $log->acao = $acao;
+        $log->nome = $nome;
+        $log->descricao = $descricao;
+        $log->data_criacao = date("Y-m-d H:i:s");
+        $log->save();
+    }
+    <?php } ?>
 
     /**
      * Finds the <?= $modelClass ?> model based on its primary key value.

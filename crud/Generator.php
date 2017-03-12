@@ -54,6 +54,8 @@ class Generator extends \yii\gii\generators\crud\Generator
             operations for the specified data model.';
     }
 
+    
+
     /**
      * @inheritdoc
      */
@@ -233,20 +235,31 @@ class Generator extends \yii\gii\generators\crud\Generator
         $tableSchema = $this->getTableSchema();
         if ($tableSchema === false || !isset($tableSchema->columns[$attribute])) {
             if (preg_match('/^(password|pass|passwd|passcode)$/i', $attribute)) {
-                return "'$attribute' => ['type' => TabularForm::INPUT_PASSWORD,'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+                return "'$attribute' => ['type' => TabularForm::INPUT_PASSWORD,'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...']],";
                 //return "\$form->field(\$model, '$attribute')->passwordInput()";
             } else {
-                return "'$attribute' => ['type' => TabularForm::INPUT_TEXT, 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+                return "'$attribute' => ['type' => TabularForm::INPUT_TEXT, 'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...']],";
                 //return "\$form->field(\$model, '$attribute')";
             }
         }
         $column = $tableSchema->columns[$attribute];
+        if (stripos($column->name, "id_") !== false) {
+            //return "\$form->field(\$model, '$attribute')->textarea(['rows' => 6])";
+            
+            $name = "Tb".ucfirst(str_replace("id_", "", $column->name))."s";
+            return "'$attribute' => ['type' => Form::INPUT_DROPDOWN_LIST, 'items' => ArrayHelper::map(".$name."::find()->orderBy(\"nome\")->asArray()->all(), \"id\", \"nome\"), 'options' => ['prompt' => 'Selecione ".$attributeLabels[$attribute]."...',]],";
+        }
+        if ($column->type === 'smallint') {
+            //return "\$form->field(\$model, '$attribute')->checkbox()";
+            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...']],";
+        }
+
         if ($column->phpType === 'boolean') {
             //return "\$form->field(\$model, '$attribute')->checkbox()";
-            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+            return "'$attribute' => ['type' => Form::INPUT_CHECKBOX, 'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...']],";
         } elseif ($column->type === 'text') {
             //return "\$form->field(\$model, '$attribute')->textarea(['rows' => 6])";
-            return "'$attribute' => ['type' => Form::INPUT_TEXTAREA, 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...','rows' => 6]],";
+            return "'$attribute' => ['type' => Form::INPUT_TEXTAREA, 'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...','rows' => 6]],";
         } elseif ($column->type === 'date') {
             return "'$attribute' => ['type' => Form::INPUT_WIDGET, 'widgetClass' => DateControl::classname(),'options' => ['type' => DateControl::FORMAT_DATE]],";
         } elseif ($column->type === 'time') {
@@ -261,10 +274,10 @@ class Generator extends \yii\gii\generators\crud\Generator
             }
             if ($column->phpType !== 'string' || $column->size === null) {
                 //return "\$form->field(\$model, '$attribute')->$input()";
-                return "'$attribute' => ['type' => Form::".$input.", 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...']],";
+                return "'$attribute' => ['type' => Form::".$input.", 'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...']],";
             } else {
                 //return "\$form->field(\$model, '$attribute')->$input(['maxlength' => $column->size])";
-                return "'$attribute' => ['type' => Form::".$input.", 'options' => ['placeholder' => 'Enter ".$attributeLabels[$attribute]."...', 'maxlength' => ".$column->size."]],";
+                return "'$attribute' => ['type' => Form::".$input.", 'options' => ['placeholder' => 'Preencha ".$attributeLabels[$attribute]."...', 'maxlength' => ".$column->size."]],";
             }
         }
     }
@@ -321,27 +334,31 @@ class Generator extends \yii\gii\generators\crud\Generator
         }
         $types = [];
         foreach ($table->columns as $column) {
-            switch ($column->type) {
-                case Schema::TYPE_SMALLINT:
-                case Schema::TYPE_INTEGER:
-                case Schema::TYPE_BIGINT:
-                    $types['integer'][] = $column->name;
-                    break;
-                case Schema::TYPE_BOOLEAN:
-                    $types['boolean'][] = $column->name;
-                    break;
-                case Schema::TYPE_FLOAT:
-                case Schema::TYPE_DECIMAL:
-                case Schema::TYPE_MONEY:
-                    $types['number'][] = $column->name;
-                    break;
-                case Schema::TYPE_DATE:
-                case Schema::TYPE_TIME:
-                case Schema::TYPE_DATETIME:
-                case Schema::TYPE_TIMESTAMP:
-                default:
-                    $types['safe'][] = $column->name;
-                    break;
+            if(stripos($column->name, "id_") !== false){
+                $types['safe'][] = "id".ucfirst(str_replace('id_', '', $column->name));
+            }else{
+                switch ($column->type) {
+                    case Schema::TYPE_SMALLINT:
+                    case Schema::TYPE_INTEGER:
+                    case Schema::TYPE_BIGINT:
+                        $types['integer2'][] = $column->name;
+                        break;
+                    case Schema::TYPE_BOOLEAN:
+                        $types['boolean'][] = $column->name;
+                        break;
+                    case Schema::TYPE_FLOAT:
+                    case Schema::TYPE_DECIMAL:
+                    case Schema::TYPE_MONEY:
+                        $types['number'][] = $column->name;
+                        break;
+                    case Schema::TYPE_DATE:
+                    case Schema::TYPE_TIME:
+                    case Schema::TYPE_DATETIME:
+                    case Schema::TYPE_TIMESTAMP:
+                    default:
+                        $types['safe'][] = $column->name;
+                        break;
+                }
             }
         }
 
@@ -417,19 +434,73 @@ class Generator extends \yii\gii\generators\crud\Generator
                 case Schema::TYPE_SMALLINT:
                 case Schema::TYPE_INTEGER:
                 case Schema::TYPE_BIGINT:
+                    $likeConditions[] = 
+        "if(stripos(\$this->{$column}, '-') !== false){
+            \$this->{$column} = str_replace('- ', '-', \$this->{$column});
+            \$exp = explode('-', \$this->{$column});
+            \$query->andFilterWhere(['>=', '{$column}', \$exp[0]]);
+            \$query->andFilterWhere(['<=', '{$column}', \$exp[1]]);
+        }elseif(stripos(\$this->{$column}, ';') !== false){
+            \$this->{$column} = str_replace('; ', ';', \$this->{$column});
+            \$exp = explode(';', \$this->{$column});
+            \$query->andFilterWhere(['in', '{$column}', \$exp]);
+        }else{
+            \$query->andFilterWhere(['=', '{$column}', \$this->{$column}]);
+        }
+        ";
+                    break;
                 case Schema::TYPE_BOOLEAN:
+                    $hashConditions[] = "'{$column}' => \$this->{$column},";
+                    break;
                 case Schema::TYPE_FLOAT:
+                    $hashConditions[] = "'{$column}' => \$this->{$column},";
+                    break;
                 case Schema::TYPE_DECIMAL:
+                    $hashConditions[] = "'{$column}' => \$this->{$column},";
+                    break;
                 case Schema::TYPE_MONEY:
+                    $hashConditions[] = "'{$column}' => \$this->{$column},";
+                    break;
                 case Schema::TYPE_DATE:
+                    $hashConditions[] = "'{$column}' => \$this->{$column},";
+                    break;
                 case Schema::TYPE_TIME:
+                    $hashConditions[] = "'{$column}' => \$this->{$column},";
+                    break;
                 case Schema::TYPE_DATETIME:
+                    $likeConditions[] = 
+        "if(stripos(\$this->{$column}, '-') !== false){
+            \$this->{$column} = str_replace('- ', '-', \$this->{$column});
+            \$exp = explode('-', \$this->{$column});
+            \$query->andFilterWhere(['>=', '{$column}', \$exp[0]]);
+            \$query->andFilterWhere(['<=', '{$column}', \$exp[1]]);
+        }else{
+            \$query->andFilterWhere(['like', '{$column}', \$this->{$column}]);
+        }";
+                    break;
+                case Schema::TYPE_TEXT:
+                    $likeConditions[] = "\$query->andFilterWhere(['like', '{$column}', \$this->{$column}]);";
+                    break;
                 case Schema::TYPE_TIMESTAMP:
                     $hashConditions[] = "'{$column}' => \$this->{$column},";
                     break;
                 default:
-                    $likeConditions[] = "->andFilterWhere(['like', '{$column}', \$this->{$column}])";
+                    $likeConditions[] = 
+        "if(stripos(\$this->{$column}, ';') !== false){
+            \$this->{$column} = str_replace('; ', ';', \$this->{$column});
+            \$exp = explode(';', \$this->{$column});
+            \$query->andFilterWhere(['in', '{$column}', \$exp]);
+        }else{
+            \$query->andFilterWhere(['like', '{$column}', \$this->{$column}]);
+        }
+        ";
                     break;
+            }
+        }
+
+        foreach ($columns as $column => $a) {
+            if(stripos($column, "id_") !== false){
+                $likeConditions[] = "\$query->andFilterWhere(['=', 'tb_".str_replace('id_', '', $column)."s.id', \$this->id".ucfirst(str_replace('id_', '', $column))."]);";
             }
         }
 
@@ -439,9 +510,18 @@ class Generator extends \yii\gii\generators\crud\Generator
                 . str_repeat(' ', 12) . implode("\n" . str_repeat(' ', 12), $hashConditions)
                 . "\n" . str_repeat(' ', 8) . "]);\n";
         }
+        /*
         if (!empty($likeConditions)) {
             $conditions[] = "\$query" . implode("\n" . str_repeat(' ', 12), $likeConditions) . ";\n";
+        }*/
+        /*foreach($hashConditions as $l){
+            $conditions[]  = $l;
+        }*/
+        foreach($likeConditions as $l){
+            $conditions[]  = $l;
         }
+        
+
 
         return $conditions;
     }

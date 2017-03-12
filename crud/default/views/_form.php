@@ -24,6 +24,17 @@ use yii\helpers\Html;
 use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use kartik\datecontrol\DateControl;
+use yii\helpers\ArrayHelper;
+<?php 
+    foreach ($safeAttributes as $attribute){
+        //echo ($attribute)."aaaa";
+        if(stripos($attribute, "id_") !== false){
+            echo 'use backend\models\Tb'. ucfirst(str_replace("id_", "", $attribute)) .'s;';
+
+        }
+    } 
+?>
+
 
 /**
  * @var yii\web\View $this
@@ -31,26 +42,31 @@ use kartik\datecontrol\DateControl;
  * @var yii\widgets\ActiveForm $form
  */
 ?>
+<div class="panel-body">
+    <div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-form">
 
-<div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-form">
+        <?= "<?php " ?>$form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL]); echo Form::widget([
 
-    <?= "<?php " ?>$form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL]); echo Form::widget([
+                'model' => $model,
+                'form' => $form,
+                'columns' => 1,
+                'attributes' => [
 
-        'model' => $model,
-        'form' => $form,
-        'columns' => 1,
-        'attributes' => [
+        <?php foreach ($safeAttributes as $attribute): ?>
+                    <?= $generator->generateActiveField($attribute) . "\n\n"; ?>
+        <?php endforeach; ?>
+                ]
 
-<?php foreach ($safeAttributes as $attribute): ?>
-            <?= $generator->generateActiveField($attribute) . "\n\n"; ?>
-<?php endforeach; ?>
-        ]
-
-    ]);
-
-    echo Html::submitButton($model->isNewRecord ? Yii::t('app', 'Create') : Yii::t('app', 'Update'),
-        ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']
-    );
-    ActiveForm::end(); ?>
-
+            ]);
+?>
+    </div>
 </div>
+<div class="panel-footer">
+    <?= "<?php " ?>
+        echo Html::submitButton($model->isNewRecord ? Yii::t('app', 'Criar') : Yii::t('app', 'Atualizar'),
+            ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']
+        );
+    ?>
+    <?= "<?="; ?> Html::a('Voltar', ['<?= str_replace('-', '', Inflector::camel2id(StringHelper::basename($generator->modelClass))) ?>/index', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+</div>
+<?= "<?php " ?> ActiveForm::end(); ?>

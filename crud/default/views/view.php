@@ -23,24 +23,28 @@ use kartik\datecontrol\DateControl;
  */
 
 $this->title = $model-><?= $generator->getNameAttribute() ?>;
-$this->params['breadcrumbs'][] = ['label' => <?= $generator->generateString(Inflector::pluralize(Inflector::camel2words(StringHelper::basename($generator->modelClass)))) ?>, 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
+//$this->params['breadcrumbs'][] = ['label' => <?= $generator->generateString(Inflector::pluralize(Inflector::camel2words(StringHelper::basename($generator->modelClass)))) ?>, 'url' => ['index']];
+//$this->params['breadcrumbs'][] = $this->title;
 ?>
+<p></p>
+<?php /*
 <div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-view">
-    <div class="page-header">
+*/ ?>
+<div class="panel panel-info">
+    <?php /*<div class="page-header">
         <h1><?= "<?= " ?>Html::encode($this->title) ?></h1>
-    </div>
-
-
+    </div>*/ ?>
+    <div class="panel-heading"><?= "<?= " ?>Html::encode($this->title) ?></div>
+    
     <?= "<?= " ?>DetailView::widget([
         'model' => $model,
         'condensed' => false,
         'hover' => true,
-        'mode' => Yii::$app->request->get('edit') == 't' ? DetailView::MODE_EDIT : DetailView::MODE_VIEW,
+        /*'mode' => Yii::$app->request->get('edit') == 't' ? DetailView::MODE_EDIT : DetailView::MODE_VIEW,
         'panel' => [
             'heading' => $this->title,
             'type' => DetailView::TYPE_INFO,
-        ],
+        ],*/
         'attributes' => [
 <?php
 if (($tableSchema = $generator->getTableSchema()) === false) {
@@ -51,7 +55,13 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
     foreach ($generator->getTableSchema()->columns as $column) {
 
         $format = $generator->generateColumnFormat($column);
-
+        if (stripos($column->name, "id_") !== false) {
+            echo
+"            [
+                'attribute' => '$column->name',
+                'value' => \$model->id".ucfirst(str_replace("id_", "", $column->name))."->nome,
+            ],\n";
+        }
         if ($column->type === 'date') {
             echo
 "            [
@@ -110,5 +120,10 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
         ],
         'enableEditMode' => true,
     ]) ?>
-
+    <div class="panel-footer">
+        <?= "<?="; ?> Html::a('Voltar', ['<?= str_replace('-', '', Inflector::camel2id(StringHelper::basename($generator->modelClass))) ?>/index', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+    </div>
 </div>
+<style>
+.wrap > .container { padding: 0; }
+</style>
