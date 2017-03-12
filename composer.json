@@ -3,7 +3,7 @@
 	"description": "Gii Generator base on Kartik-V extension https://github.com/kartik-v",
 	"version": "dev-master",
 	"source": {
-		"url": "git://github.com/weaverryan/derp-dangerzone.git",
+		"url": "git://github.com/felipe-santos/yii2-kartikgii.git",
 		"type": "git",
 		"reference": "master"
 	},
@@ -14,8 +14,8 @@
 		}
 	],
 	"autoload": {
-		"psr-4": {
-			"felipesantos\\kartikgii\\": ""
+		"psr-0": {
+			"felipesantos\\kartikgii\\": "src"
 		}
 	},
 	"require": {
